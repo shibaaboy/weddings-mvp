@@ -1,4 +1,4 @@
 "use client";
 import Link from "next/link";import {usePathname} from "next/navigation";import {Sparkles,Compass,Heart,BriefcaseBusiness} from "lucide-react";
-const items=[["/","Подбор",Sparkles],["/build","Моя сборка",Compass],["/favorites","Избранное",Heart],["/vendors","Для подрядчиков",BriefcaseBusiness]] as const;
-export function Sidebar(){const p=usePathname();return <aside className="sidebar marketSide"><div className="brand">WEDLY</div><nav>{items.map(([h,l,I])=><Link key={h} href={h} className={p===h?"active":""}><I size={17}/><span>{l}</span></Link>)}</nav><div className="sideQuote"><span>Свадьба — это не чеклист.</span><b>Это выборы, которые должны сложиться вместе.</b></div></aside>}
+const items=[["/","Подбор",Sparkles],["/build","Сборка",Compass],["/favorites","Избранное",Heart],["/vendors","Профи",BriefcaseBusiness]] as const;
+export function Sidebar(){const p=usePathname();return <><aside className="sidebar marketSide"><div className="brand">WEDLY</div><nav>{items.map(([h,l,I])=><Link key={h} href={h} className={p===h?"active":""}><I size={17}/><span>{l}</span></Link>)}</nav><div className="sideQuote"><span>Свадьба — это не чеклист.</span><b>Это выборы, которые должны сложиться вместе.</b></div></aside><nav className="mobileNav">{items.map(([h,l,I])=><Link key={h} href={h} className={p===h?"active":""}><I/><span>{l}</span></Link>)}</nav></>}
