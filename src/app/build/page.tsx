@@ -1,7 +1,7 @@
 "use client";
 import {useMemo,useState} from "react";
 import {Sidebar} from "@/components/Sidebar";
-import {MapPin,Mic2,Camera,Video,Sparkles,CakeSlice,Lightbulb,Flower2,RefreshCw,Check,X,Users,TreePine,Building2,Heart} from "lucide-react";
+import {MapPin,Mic2,Camera,Video,Sparkles,CakeSlice,Lightbulb,Flower2,RefreshCw,Check,X,Users,TreePine,Building2,Heart,ChevronLeft,ChevronRight,Maximize2} from "lucide-react";
 
 const BUDGET=2500000;
 const fixed=[["Ведущий","Современный · без конкурсов",170000,Mic2],["Фотограф","Editorial + репортаж",150000,Camera],["Видео","Киношный highlight",130000,Video],["Reels-maker","Контент в день свадьбы",50000,Sparkles],["Декор","Ткани · минимализм",390000,Flower2],["Свет и звук","Полный комплект",320000,Lightbulb],["Торт","Минималистичный",30000,CakeSlice]] as const;
@@ -12,8 +12,19 @@ const venues=[
  {id:4,name:"Дом у Леса",kind:"Камерная загородная площадка",place:"Алабушево · Московская область",capacity:"до 45 гостей",price:719000,tone:"loft",photo:"https://images.unsplash.com/photo-1519225421980-715cb0215aed?auto=format&fit=crop&w=1200&q=85",source:"houseforwedding.ru",tags:["панорамные окна","лес","церемония у воды"],Icon:TreePine}
 ];
 
+function VenueGallery({venue,onOpen}:{venue:any,onOpen:()=>void}){
+ const [index,setIndex]=useState(0); const images=venue.images?.length?venue.images:[venue.photo];
+ const move=(step:number)=>setIndex(v=>(v+step+images.length)%images.length);
+ return <div className={"venueVisual "+venue.tone} style={{backgroundImage:`linear-gradient(180deg,rgba(20,18,15,.03),rgba(20,18,15,.34)),url("${images[index]}")`}}>
+  <button className="galleryOpen" onClick={onOpen} aria-label="Открыть галерею"><Maximize2/></button>
+  {images.length>1&&<><button className="slideArrow left" onClick={()=>move(-1)} aria-label="Предыдущее фото"><ChevronLeft/></button><button className="slideArrow right" onClick={()=>move(1)} aria-label="Следующее фото"><ChevronRight/></button></>}
+  <Heart className="heart"/><span>{venue.kind}</span><div className="slideCount">{index+1} / {images.length}</div>
+  {images.length>1&&<div className="slideDots">{images.map((_:string,i:number)=><button key={i} className={i===index?"active":""} onClick={()=>setIndex(i)} aria-label={`Фото ${i+1}`}/>)}</div>}
+ </div>
+}
+
 export default function Build(){
- const [mode,setMode]=useState("Balanced"); const [show,setShow]=useState(false); const [venueId,setVenueId]=useState(1);
+ const [mode,setMode]=useState("Balanced"); const [show,setShow]=useState(false); const [venueId,setVenueId]=useState(1); const [gallery,setGallery]=useState<any>(null);
  const venue=venues.find(v=>v.id===venueId)!;
  const fixedTotal=fixed.reduce((s,x)=>s+x[2],0); const selected=venue.price+fixedTotal; const remaining=BUDGET-selected;
  const pct=Math.round(venue.price/BUDGET*100);
@@ -27,6 +38,7 @@ export default function Build(){
  <h2 className="chooseTitle">Соберите свадьбу</h2><section className="categoryList">
  <article className="category featuredCategory"><div className="categoryNo">01</div><div className={"categoryIcon venueMini "+venue.tone}><venue.Icon/></div><div className="categoryText"><small>Площадка · выбрано</small><h3>{venue.name}</h3><span>{venue.kind} · {money(venue.price)}</span></div><button onClick={()=>setShow(true)}><RefreshCw/> Заменить</button></article>
  {fixed.map(([name,desc,price,Icon],i)=><article className="category" key={name}><div className="categoryNo">{String(i+2).padStart(2,"0")}</div><div className="categoryIcon"><Icon/></div><div className="categoryText"><small>{name}</small><h3>{desc}</h3><span>{money(price)}</span></div><button><RefreshCw/> Смотреть варианты</button></article>)}</section>
- {show&&<div className="venueOverlay" onClick={()=>setShow(false)}><section className="venueDrawer" onClick={e=>e.stopPropagation()}><header><div><span className="eyebrow">РЕАЛЬНЫЕ ПЛОЩАДКИ · МОСКВА И МО</span><h2>Выберите место</h2><p>Реальные площадки. Характеристики сверены по официальным источникам; стоимость уточняется у площадки.</p></div><button className="close" onClick={()=>setShow(false)}><X/></button></header><div className="venueGrid">{venues.map(v=><article className={"venueCard "+(v.id===venueId?"chosen":"")} key={v.id}><div className={"venueVisual "+v.tone} style={{backgroundImage:`linear-gradient(180deg,rgba(20,18,15,.04),rgba(20,18,15,.34)),url("${v.photo}")`}}><Heart className="heart"/><span>{v.kind}</span></div><div className="venueBody"><div className="venueMeta"><span><MapPin/> {v.place}</span><span><Users/> {v.capacity}</span></div><h3>{v.name}</h3><div className="tags">{v.tags.map(t=><span key={t}>{t}</span>)}</div><small className="venueSource">Источник: {v.source}</small><footer><b>от {money(v.price)}</b><button onClick={()=>{setVenueId(v.id);setShow(false)}}>{v.id===venueId?<><Check/> Выбрано</>:"Выбрать"}</button></footer></div></article>)}</div></section></div>}
+ {show&&<div className="venueOverlay" onClick={()=>setShow(false)}><section className="venueDrawer" onClick={e=>e.stopPropagation()}><header><div><span className="eyebrow">РЕАЛЬНЫЕ ПЛОЩАДКИ · МОСКВА И МО</span><h2>Выберите место</h2><p>Реальные площадки. Характеристики сверены по официальным источникам; стоимость уточняется у площадки.</p></div><button className="close" onClick={()=>setShow(false)}><X/></button></header><div className="venueGrid">{venues.map(v=><article className={"venueCard "+(v.id===venueId?"chosen":"")} key={v.id}><VenueGallery venue={v} onOpen={()=>setGallery(v)}/><div className="venueBody"><div className="venueMeta"><span><MapPin/> {v.place}</span><span><Users/> {v.capacity}</span></div><h3>{v.name}</h3><div className="tags">{v.tags.map(t=><span key={t}>{t}</span>)}</div><small className="venueSource">Источник: {v.source}</small><footer><b>от {money(v.price)}</b><button onClick={()=>{setVenueId(v.id);setShow(false)}}>{v.id===venueId?<><Check/> Выбрано</>:"Выбрать"}</button></footer></div></article>)}</div></section></div>}
+ {gallery&&<div className="lightbox" onClick={()=>setGallery(null)}><button className="lightboxClose" onClick={()=>setGallery(null)}><X/></button><div className="lightboxInner" onClick={e=>e.stopPropagation()}><h2>{gallery.name}</h2><p>{gallery.place} · {gallery.capacity}</p><div className="lightboxGrid">{(gallery.images?.length?gallery.images:[gallery.photo]).map((src:string,i:number)=><img key={src+i} src={src} alt={`${gallery.name} — фото ${i+1}`}/>)}</div></div></div>}
  </main></div>
 }
