@@ -1,45 +1,59 @@
 "use client";
 import {useMemo,useState} from "react";
 import {Sidebar} from "@/components/Sidebar";
-import {MapPin,Mic2,Camera,Video,Sparkles,CakeSlice,Lightbulb,Flower2,RefreshCw,Check,X,Users,TreePine,Building2,Heart,ChevronLeft,ChevronRight,Maximize2} from "lucide-react";
+import {MapPin,Users,CalendarDays,WalletCards,Building2,Mic2,Camera,Video,Sparkles,Flower2,Lightbulb,CakeSlice,Heart,Check,ChevronRight,X,Search,SlidersHorizontal} from "lucide-react";
 
-const BUDGET=2500000;
-const fixed=[["Ведущий","Современный · без конкурсов",170000,Mic2],["Фотограф","Editorial + репортаж",150000,Camera],["Видео","Киношный highlight",130000,Video],["Reels-maker","Контент в день свадьбы",50000,Sparkles],["Декор","Ткани · минимализм",390000,Flower2],["Свет и звук","Полный комплект",320000,Lightbulb],["Торт","Минималистичный",30000,CakeSlice]] as const;
-const venues=[
- {id:1,name:"Roka Park Collection",kind:"Бутик-отель · камерные свадьбы",place:"Кучино · 30 км от Кремля",capacity:"камерный формат",price:400000,tone:"forest",photo:"https://images.unsplash.com/photo-1519167758481-83f550bb49b3?auto=format&fit=crop&w=1200&q=85",source:"rokapark.ru",images:["https://www.architime.ru/news/sukhaya/4.jpg","https://n1s1.hsmedia.ru/5c/dc/0f/5cdc0f0dbbe2c3aac4418852724f7b38/728x485_1_0906b7776f9dcaee1a49a8321c542f2d%405000x3333_0xKe8U8HVW_7396483311109174394.jpg.webp","https://www.gdebar.ru/data/app/bar/img/gallery/10318/246273.webp","https://avatars.mds.yandex.net/get-altay/11564583/2a0000018d8478f78f9c3fa9aaca45924056/L_height"],tags:["панорамный ресторан","проживание","природа"],Icon:TreePine},
- {id:2,name:"Villa Michetti",kind:"Итальянская усадьба",place:"Солнечногорский район",capacity:"30–80 гостей",price:600000,tone:"manor",photo:"https://images.unsplash.com/photo-1507501336603-6e31db2be093?auto=format&fit=crop&w=1200&q=85",source:"villamichetti.com",tags:["15 га парк","фонтаны","водохранилище"],Icon:Building2},
- {id:3,name:"Вилла Ротонда",kind:"Дворец · event-площадка",place:"КП Довиль · 15 мин от Москвы",capacity:"2 панорамных зала",price:750000,tone:"lake",photo:"https://images.unsplash.com/photo-1464366400600-7168b8af9bc3?auto=format&fit=crop&w=1200&q=85",source:"villarotonda.moscow",tags:["французский парк","у воды","5 зон церемонии"],Icon:Sparkles},
- {id:4,name:"Дом у Леса",kind:"Камерная загородная площадка",place:"Алабушево · Московская область",capacity:"до 45 гостей",price:719000,tone:"loft",photo:"https://images.unsplash.com/photo-1519225421980-715cb0215aed?auto=format&fit=crop&w=1200&q=85",source:"houseforwedding.ru",tags:["панорамные окна","лес","церемония у воды"],Icon:TreePine}
-];
-
-function VenueGallery({venue,onOpen}:{venue:any,onOpen:()=>void}){
- const [index,setIndex]=useState(0); const images=venue.images?.length?venue.images:[venue.photo];
- const move=(step:number)=>setIndex(v=>(v+step+images.length)%images.length);
- return <div className={"venueVisual "+venue.tone} style={{backgroundImage:`linear-gradient(180deg,rgba(20,18,15,.03),rgba(20,18,15,.34)),url("${images[index]}")`}}>
-  <button className="galleryOpen" onClick={onOpen} aria-label="Открыть галерею"><Maximize2/></button>
-  {images.length>1&&<><button className="slideArrow left" onClick={()=>move(-1)} aria-label="Предыдущее фото"><ChevronLeft/></button><button className="slideArrow right" onClick={()=>move(1)} aria-label="Следующее фото"><ChevronRight/></button></>}
-  <Heart className="heart"/><span>{venue.kind}</span><div className="slideCount">{index+1} / {images.length}</div>
-  {images.length>1&&<div className="slideDots">{images.map((_:string,i:number)=><button key={i} className={i===index?"active":""} onClick={()=>setIndex(i)} aria-label={`Фото ${i+1}`}/>)}</div>}
- </div>
-}
+const money=(n:number)=>n.toLocaleString("ru-RU")+" ₽";
+const categories=[
+ {id:"venue",label:"Площадка",Icon:Building2,items:[
+  {id:"roka",name:"Roka Park Collection",meta:"Балашиха · камерный формат",price:400000,img:"https://www.architime.ru/news/sukhaya/4.jpg",tags:["панорамные окна","проживание","природа"]},
+  {id:"michetti",name:"Villa Michetti",meta:"Солнечногорск · 30–80 гостей",price:600000,img:"https://images.unsplash.com/photo-1507501336603-6e31db2be093?auto=format&fit=crop&w=1200&q=85",tags:["усадьба","парк","у воды"]},
+  {id:"forest",name:"Дом у Леса",meta:"Алабушево · до 45 гостей",price:719000,img:"https://images.unsplash.com/photo-1519225421980-715cb0215aed?auto=format&fit=crop&w=1200&q=85",tags:["лес","камерно","панорама"]}
+ ]},
+ {id:"host",label:"Ведущий",Icon:Mic2,items:[
+  {id:"h1",name:"Александр · modern host",meta:"Интеллигентно · без конкурсов",price:170000,img:"https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=900&q=85",tags:["modern","60 гостей","DJ set"]},
+  {id:"h2",name:"Михаил · event host",meta:"Энергично · современно",price:145000,img:"https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=900&q=85",tags:["party","импровизация","Москва"]}
+ ]},
+ {id:"photo",label:"Фотограф",Icon:Camera,items:[
+  {id:"p1",name:"Editorial Stories",meta:"Editorial + репортаж",price:150000,img:"https://images.unsplash.com/photo-1511285560929-80b456fea0bc?auto=format&fit=crop&w=1000&q=85",tags:["плёнка","editorial","12 часов"]},
+  {id:"p2",name:"Film & Feel",meta:"Живой репортаж · плёнка",price:125000,img:"https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=1000&q=85",tags:["film","reportage","10 часов"]}
+ ]},
+ {id:"video",label:"Видео",Icon:Video,items:[
+  {id:"v1",name:"Motion Wedding",meta:"Киношный highlight",price:130000,img:"https://images.unsplash.com/photo-1516035069371-29a1b244cc32?auto=format&fit=crop&w=1000&q=85",tags:["highlight","reels","2 камеры"]},
+  {id:"v2",name:"Daylight Films",meta:"Документальный стиль",price:110000,img:"https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?auto=format&fit=crop&w=1000&q=85",tags:["documentary","teaser","10 часов"]}
+ ]},
+ {id:"decor",label:"Декор",Icon:Flower2,items:[
+  {id:"d1",name:"Soft Architecture",meta:"Ткани · свет · минимализм",price:390000,img:"https://images.unsplash.com/photo-1507501336603-6e31db2be093?auto=format&fit=crop&w=1000&q=85",tags:["текстиль","церемония","свечи"]},
+  {id:"d2",name:"Air Studio",meta:"Воздушная архитектура",price:320000,img:"https://images.unsplash.com/photo-1478146896981-b80fe463b330?auto=format&fit=crop&w=1000&q=85",tags:["минимализм","свет","монтаж"]}
+ ]},
+ {id:"tech",label:"Свет и звук",Icon:Lightbulb,items:[
+  {id:"t1",name:"Full Production",meta:"Свет · звук · haze · команда",price:320000,img:"https://images.unsplash.com/photo-1492684223066-81342ee5ff30?auto=format&fit=crop&w=1000&q=85",tags:["wash","spot","hazer"]},
+  {id:"t2",name:"Light Set",meta:"Компактный production",price:240000,img:"https://images.unsplash.com/photo-1501386761578-eac5c94b800a?auto=format&fit=crop&w=1000&q=85",tags:["свет","звук","команда"]}
+ ]},
+ {id:"cake",label:"Торт",Icon:CakeSlice,items:[
+  {id:"c1",name:"Minimal Cake",meta:"3 яруса · современный",price:30000,img:"https://images.unsplash.com/photo-1535254973040-607b474cb50d?auto=format&fit=crop&w=1000&q=85",tags:["дегустация","доставка","декор"]},
+  {id:"c2",name:"Sculptural Cake",meta:"Скульптурный · 4 яруса",price:45000,img:"https://images.unsplash.com/photo-1519915028121-7d3463d20b13?auto=format&fit=crop&w=1000&q=85",tags:["wow","доставка","эскиз"]}
+ ]}
+] as const;
+type Pick={category:string,item:any};
 
 export default function Build(){
- const [mode,setMode]=useState("Balanced"); const [show,setShow]=useState(false); const [venueId,setVenueId]=useState(1); const [gallery,setGallery]=useState<any>(null); const [details,setDetails]=useState<any>(null);
- const venue=venues.find(v=>v.id===venueId)!;
- const fixedTotal=fixed.reduce((s,x)=>s+x[2],0); const selected=venue.price+fixedTotal; const remaining=BUDGET-selected;
- const pct=Math.round(venue.price/BUDGET*100);
- const reservePct=Math.max(0,100-pct-42);
- const money=(n:number)=>n.toLocaleString("ru-RU")+" ₽";
- const advice=useMemo(()=>remaining>=600000?"Есть запас: можно усилить декор, площадку или entertainment.":remaining>=300000?"Сборка сбалансирована — остаётся комфортный резерв.":"Резерв небольшой. WEDLY предложит более доступные замены.",[remaining]);
- return <div className="app"><Sidebar/><main className="marketMain">
- <header className="buildHead"><div><span className="eyebrow">ВАША СБОРКА</span><h1>Москва · 60 гостей</h1><p>Бюджет {money(BUDGET)} · июль 2027</p></div><div className={"remaining "+(remaining<300000?"low":"")}><small>Свободно в бюджете</small><b>{money(remaining)}</b></div></header>
- <div className="modes">{["Balanced","Venue first","Wow effect"].map(x=><button key={x} className={mode===x?"selected":""} onClick={()=>setMode(x)}>{x}</button>)}</div>
- <section className="allocation"><div className="allocationTop"><div><span className="eyebrow">РАСПРЕДЕЛЕНИЕ</span><h2>{mode}</h2></div><b>{money(selected)} <small>выбрано</small></b></div><div className="allocationBar dynamic"><i style={{width:pct+"%"}}/><i style={{width:"20%"}}/><i style={{width:"16%"}}/><i style={{width:"13%"}}/><i style={{width:reservePct+"%"}}/></div><div className="legend"><span>Площадка {Math.round(venue.price/1000)}k</span><span>Команда 500k</span><span>Декор 390k</span><span>Техника 320k</span><span>Резерв {Math.round(remaining/1000)}k</span></div><div className="budgetAdvice"><Sparkles/><span>{advice}</span></div></section>
- <h2 className="chooseTitle">Соберите свадьбу</h2><section className="categoryList">
- <article className="category featuredCategory"><div className="categoryNo">01</div><div className={"categoryIcon venueMini "+venue.tone}><venue.Icon/></div><div className="categoryText"><small>Площадка · выбрано</small><h3>{venue.name}</h3><span>{venue.kind} · {money(venue.price)}</span></div><button onClick={()=>setShow(true)}><RefreshCw/> Заменить</button></article>
- {fixed.map(([name,desc,price,Icon],i)=><article className="category" key={name}><div className="categoryNo">{String(i+2).padStart(2,"0")}</div><div className="categoryIcon"><Icon/></div><div className="categoryText"><small>{name}</small><h3>{desc}</h3><span>{money(price)}</span></div><button><RefreshCw/> Смотреть варианты</button></article>)}</section>
- {show&&<div className="venueOverlay" onClick={()=>setShow(false)}><section className="venueDrawer" onClick={e=>e.stopPropagation()}><header><div><span className="eyebrow">РЕАЛЬНЫЕ ПЛОЩАДКИ · МОСКВА И МО</span><h2>Выберите место</h2><p>Реальные площадки. Характеристики сверены по официальным источникам; стоимость уточняется у площадки.</p></div><button className="close" onClick={()=>setShow(false)}><X/></button></header><div className="venueGrid">{venues.map(v=><article className={"venueCard "+(v.id===venueId?"chosen":"")} key={v.id}><VenueGallery venue={v} onOpen={()=>setGallery(v)}/><div className="venueBody"><div className="venueMeta"><span><MapPin/> {v.place}</span><span><Users/> {v.capacity}</span></div><h3>{v.name}</h3><button className="venueDetailsLink" onClick={()=>setDetails(v)}>Подробнее о площадке →</button><div className="tags">{v.tags.map(t=><span key={t}>{t}</span>)}</div><small className="venueSource">Источник: {v.source}</small><footer><b>от {money(v.price)}</b><button onClick={()=>{setVenueId(v.id);setShow(false)}}>{v.id===venueId?<><Check/> Выбрано</>:"Выбрать"}</button></footer></div></article>)}</div></section></div>}
- {details&&<div className="venueOverlay detailOverlay" onClick={()=>setDetails(null)}><section className="venueDetail" onClick={e=>e.stopPropagation()}><button className="close detailClose" onClick={()=>setDetails(null)}><X/></button><div className="detailHero" style={{backgroundImage:`linear-gradient(180deg,rgba(20,18,15,.05),rgba(20,18,15,.45)),url("${details.images?.[0]||details.photo}")`}}><span className="eyebrow">ПЛОЩАДКА</span><h2>{details.name}</h2><p><MapPin/> {details.place}</p><button onClick={()=>setGallery(details)}><Maximize2/> Смотреть все фото</button></div><div className="detailContent"><div className="detailMain"><span className="eyebrow">О ПЛОЩАДКЕ</span><h3>{details.kind}</h3><p>Подходит под выбранный формат свадьбы. WEDLY показывает ключевые параметры площадки и сразу считает, как выбор повлияет на общий бюджет.</p><div className="detailFacts"><div><Users/><small>Вместимость</small><b>{details.capacity}</b></div><div><MapPin/><small>Локация</small><b>{details.place}</b></div><div><Sparkles/><small>Особенности</small><b>{details.tags.join(" · ")}</b></div></div></div><aside className="detailBooking"><small>ОРИЕНТИР БЮДЖЕТА</small><strong>от {money(details.price)}</strong><p>После выбора останется <b>{money(BUDGET-fixedTotal-details.price)}</b></p><button onClick={()=>{setVenueId(details.id);setDetails(null);setShow(false)}}>{details.id===venueId?<><Check/> Уже в сборке</>:<>Добавить в мою свадьбу</>}</button><span>Стоимость уточняется у площадки · {details.source}</span></aside></div></section></div>}
- {gallery&&<div className="lightbox" onClick={()=>setGallery(null)}><button className="lightboxClose" onClick={()=>setGallery(null)}><X/></button><div className="lightboxInner" onClick={e=>e.stopPropagation()}><h2>{gallery.name}</h2><p>{gallery.place} · {gallery.capacity}</p><div className="lightboxGrid">{(gallery.images?.length?gallery.images:[gallery.photo]).map((src:string,i:number)=><img key={src+i} src={src} alt={`${gallery.name} — фото ${i+1}`}/>)}</div></div></div>}
+ const budget=2500000; const [picks,setPicks]=useState<Pick[]>([
+  {category:"venue",item:categories[0].items[0]},{category:"host",item:categories[1].items[0]},{category:"photo",item:categories[2].items[0]}
+ ]);
+ const [open,setOpen]=useState<any>(null); const [query,setQuery]=useState(""); const [liked,setLiked]=useState<string[]>([]);
+ const total=picks.reduce((s,p)=>s+p.item.price,0); const left=budget-total; const progress=Math.round(picks.length/categories.length*100);
+ const selected=(id:string)=>picks.find(p=>p.category===id)?.item;
+ const choose=(category:string,item:any)=>{setPicks(v=>[...v.filter(x=>x.category!==category),{category,item}]);setOpen(null)};
+ const ai=useMemo(()=>left>900000?"Есть хороший запас. Можно усилить декор и production или оставить резерв на банкет.":left>400000?"Сборка выглядит сбалансированно. Я бы сохранил минимум 300–400 тыс. ₽ резерва.":"Бюджет плотный — есть смысл посмотреть более лёгкую площадку или production.",[left]);
+ return <div className="app"><Sidebar/><main className="mvp">
+  <section className="mvpTop"><div><span className="eyebrow">WEDLY · YOUR WEDDING</span><h1>Собираем вашу<br/><i>идеальную свадьбу.</i></h1></div><div className="mvpBrief"><span><MapPin/> Москва и область</span><span><CalendarDays/> Июль 2027</span><span><Users/> 60 гостей</span><span><WalletCards/> {money(budget)}</span></div></section>
+  <section className="mvpStats"><div><small>СОБРАНО</small><strong>{progress}%</strong><div className="progress"><i style={{width:progress+"%"}}/></div></div><div><small>ВЫБРАНО</small><strong>{money(total)}</strong><span>{picks.length} из {categories.length} категорий</span></div><div className={left<350000?"danger":""}><small>ОСТАЛОСЬ</small><strong>{money(left)}</strong><span>на остальные категории и резерв</span></div><div className="aiMini"><Sparkles/><p>{ai}</p></div></section>
+  <section className="mvpSectionHead"><div><span className="eyebrow">КОНФИГУРАТОР</span><h2>Соберите команду</h2></div><button><SlidersHorizontal/> Настроить подбор</button></section>
+  <section className="categoryRail">{categories.map((c,i)=>{const pick=selected(c.id);return <article className={"mvpCat "+(pick?"picked":"")} key={c.id} onClick={()=>setOpen(c)}><div className="catIndex">0{i+1}</div><div className="catIcon"><c.Icon/></div><div className="catCopy"><small>{c.label}</small>{pick?<><b>{pick.name}</b><span>{money(pick.price)}</span></>:<><b>Не выбрано</b><span>Посмотреть варианты</span></>}</div>{pick?<Check className="catCheck"/>:<ChevronRight className="catArrow"/>}</article>})}</section>
+  <section className="mvpSectionHead discoverHead"><div><span className="eyebrow">ВАШИ ВАРИАНТЫ</span><h2>Подходит под ваш стиль</h2></div><div className="searchFake"><Search/> Москва · до 2,5 млн</div></section>
+  <section className="editorialGrid">{categories.slice(0,4).map(c=>{const x=c.items[0];return <article className="editorialCard" key={c.id} onClick={()=>setOpen(c)}><div className="editorialPhoto" style={{backgroundImage:`linear-gradient(180deg,transparent 50%,rgba(20,18,15,.5)),url("${x.img}")`}}><button onClick={e=>{e.stopPropagation();setLiked(v=>v.includes(x.id)?v.filter(k=>k!==x.id):[...v,x.id])}}><Heart className={liked.includes(x.id)?"filled":""}/></button><span>{c.label}</span></div><div><small>{x.meta}</small><h3>{x.name}</h3><footer><b>от {money(x.price)}</b><span>Смотреть <ChevronRight/></span></footer></div></article>})}</section>
+  <section className="mvpAi"><Sparkles/><div><span className="eyebrow">WEDLY AI</span><h2>«Сделай визуально дороже,<br/>но не выходи за 2,5 млн»</h2><p>AI пересоберёт категории и покажет, где деньги сильнее влияют на впечатление от свадьбы.</p></div><button>Пересобрать бюджет →</button></section>
+  {open&&<div className="pickerOverlay" onClick={()=>setOpen(null)}><section className="picker" onClick={e=>e.stopPropagation()}><header><div><span className="eyebrow">{open.label}</span><h2>Выберите вариант</h2></div><button onClick={()=>setOpen(null)}><X/></button></header><div className="pickerSearch"><Search/><input value={query} onChange={e=>setQuery(e.target.value)} placeholder={"Поиск: "+open.label.toLowerCase()}/></div><div className="pickerGrid">{open.items.filter((x:any)=>x.name.toLowerCase().includes(query.toLowerCase())).map((x:any)=><article className="vendorCard" key={x.id}><div className="vendorPhoto" style={{backgroundImage:`linear-gradient(180deg,transparent,rgba(20,18,15,.25)),url("${x.img}")`}}><button onClick={()=>setLiked(v=>v.includes(x.id)?v.filter(k=>k!==x.id):[...v,x.id])}><Heart className={liked.includes(x.id)?"filled":""}/></button></div><div className="vendorBody"><small>{x.meta}</small><h3>{x.name}</h3><div className="vendorTags">{x.tags.map((t:string)=><span key={t}>{t}</span>)}</div><footer><b>{money(x.price)}</b><button onClick={()=>choose(open.id,x)}>{selected(open.id)?.id===x.id?<><Check/> Выбрано</>:"Добавить"}</button></footer></div></article>)}</div></section></div>}
  </main></div>
 }
