@@ -1,0 +1,1 @@
+import { Sidebar } from "@/components/Sidebar"; export default function Page(){return <div className="app"><Sidebar/><main><span className="eyebrow">ПЛАН ЗАЛА</span><h1 style={{font:"42px Georgia"}}>Рассадка</h1><section className="panel"><h2>57 гостей · 4 без стола</h2><p>Drag & drop редактор столов и гостей будет здесь.</p></section></main></div>}
